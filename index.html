@@ -1,0 +1,102 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="gb2312">
+<title></title>
+</head>
+<body>
+<form name="form1" method="post" action="">
+  <p>
+    <label for="ipt"></label>
+    <textarea name="input" cols="80" rows="20" id="input"></textarea>
+    <label for="output"></label>
+    <textarea name="output" cols="80" rows="20" id="output" disabled></textarea>
+  </p>
+  <p>
+    <input type="button" name="tj" id="tj" value="转换">
+  </p>
+</form>
+</body>
+<script>
+	var tj = document.getElementById("tj"),input = document.getElementById("input"),output = document.getElementById("output");
+	tj.onclick=function(){
+		code2b64(utf16to8(input.value))
+		};
+	function toBin(estr){
+		//对str进行ASCII编码
+		var tstr='';
+		for(var i=0;i<estr.length;i++){
+			var astr=estr[i].charCodeAt();
+			//转成二进制形式
+			var bstr = astr.toString(2);
+			var cstr = bstr.length<8?prezero(bstr,(8-bstr.length)):bstr;
+			tstr = tstr+cstr;
+			}
+		// 以3个字节为一组，非3的倍数补0字节
+			var s3=tstr.length/8%3;
+			tstr=s3?postzero(tstr,(3-s3)*8):tstr;
+			return tstr;
+	}
+	function code2b64(str){
+		//每3个字节为一组
+		var rArr=[],vArr=[];
+		for(var ri=0;ri<Math.ceil(str.length/3);ri++){
+		rArr.push(str.slice(ri*3,ri*3+3));
+		}
+		for(var x in rArr){
+			abin=toBin(rArr[x]);
+			cool = table64[parseInt(abin,2)>>18];
+			cool = cool + table64[parseInt(abin,2)>>12&0x3F];
+			cool = cool + table64[parseInt(abin,2)>>6&0x3F];
+			cool = cool + table64[parseInt(abin,2)&0x3F];
+			vArr.push(cool);
+			}
+			var tempstr='';
+			for(var vx in vArr){
+			tempstr=tempstr+vArr[vx];
+			}
+			switch(3-str.length%3) {
+				case 2:
+					output.value=tempstr.replace(/AA$/g,'==');
+					break;
+				case 1:
+					output.value=tempstr.replace(/A$/g,'=');
+					break;
+				default:
+				output.value=tempstr;
+			}
+			
+			
+		}
+	function prezero(a,b){
+			for(var i=0;i<b;i++){
+					a='0'+a;
+				}
+			return a;
+		}
+	function postzero(a,b){
+			for(var i=0;i<b;i++){
+					a=a+'0';
+				}
+			return a;
+		}
+	var table64=["A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z","a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z","0","1","2","3","4","5","6","7","8","9","+","/"];
+	function utf16to8(str){
+	  var out='',c1,i;
+	  for(i=0; i<str.length;i++){
+	    c1 = str.charCodeAt(i);
+	    if(c1<=0x007F&c1>=0x0001){
+	      out+=str.charAt(i);
+	    }else if(c1>0x07FF){
+	      out+=String.fromCharCode(0xE0|((c1>>12)&0x0F));
+	      out+=String.fromCharCode(0X80|((c1>>6)&0x3F));
+	      out+=String.fromCharCode(0X80|((c1>>0)&0x3F));
+	    }else{
+	      out+=String.fromCharCode(0xC0|(c1>>6)&0x1F);
+	      out+=String.fromCharCode(0x80|(c1>>0)&0x3F);
+	    }
+	  }
+	  return out;
+	}
+</script>
+</html>
